@@ -40,13 +40,13 @@ ruleTtDng = Rule
 
 daysOfWeek :: [(Text, String)]
 daysOfWeek =
-  [ ( "Monday"   , "th(ứ) (2|hai)"                                      )
-  , ( "Tuesday"  , "th(ứ) (3|ba)"                                       )
-  , ( "Wednesday", "th(ứ) 4|th(ứ) b(ố)n|th(ứ) t(ư)" )
-  , ( "Thursday" , "th(ứ) (5|n(ă)m)"                               )
-  , ( "Friday"   , "th(ứ) 6|th(ứ) s(á)u"                      )
-  , ( "Saturday" , "th(ứ) (7|b((ả)|(ẩ))y)"                    )
-  , ( "Sunday"   , "ch(ủ) nh(ậ)t"                                  )
+  [ ( "Monday"   , "th(\x1ee9) (2|hai)"                                      )
+  , ( "Tuesday"  , "th(\x1ee9) (3|ba)"                                       )
+  , ( "Wednesday", "th(\x1ee9) 4|th(\x1ee9) b(\x1ed1)n|th(\x1ee9) t(\x01b0)" )
+  , ( "Thursday" , "th(\x1ee9) (5|n(\x0103)m)"                               )
+  , ( "Friday"   , "th(\x1ee9) 6|th(\x1ee9) s(\x00e1)u"                      )
+  , ( "Saturday" , "th(\x1ee9) (7|b((\x1ea3)|(\x1ea9))y)"                    )
+  , ( "Sunday"   , "ch(\x1ee7) nh(\x1ead)t"                                  )
   ]
 
 ruleDaysOfWeek :: [Rule]
@@ -60,18 +60,18 @@ ruleDaysOfWeek = zipWith go daysOfWeek [1..7]
 
 months :: [(Text, String)]
 months =
-  [ ( "January"  , "th(á)ng (gi(ê)ng|m(ộ)t)"         )
-  , ( "February" , "th(á)ng hai"                               )
-  , ( "March"    , "th(á)ng ba"                                )
-  , ( "April"    , "th(á)ng t(ư)|th(á)ng b(ố)n" )
-  , ( "May"      , "th(á)ng n(ă)m"                        )
-  , ( "June"     , "th(á)ng s(á)u"                        )
-  , ( "July"     , "th(á)ng b(ả)y"                        )
-  , ( "August"   , "th(á)ng t(á)m"                        )
-  , ( "September", "th(á)ng ch(í)n"                       )
-  , ( "October"  , "th(á)ng m(ư)(ờ)i"                )
-  , ( "November" , "th(á)ng m(ư)(ờ)i m(ộ)t"     )
-  , ( "December" , "th(á)ng m(ư)(ờ)i hai"            )
+  [ ( "January"  , "th(\x00e1)ng (gi(\x00ea)ng|m(\x1ed9)t)"         )
+  , ( "February" , "th(\x00e1)ng hai"                               )
+  , ( "March"    , "th(\x00e1)ng ba"                                )
+  , ( "April"    , "th(\x00e1)ng t(\x01b0)|th(\x00e1)ng b(\x1ed1)n" )
+  , ( "May"      , "th(\x00e1)ng n(\x0103)m"                        )
+  , ( "June"     , "th(\x00e1)ng s(\x00e1)u"                        )
+  , ( "July"     , "th(\x00e1)ng b(\x1ea3)y"                        )
+  , ( "August"   , "th(\x00e1)ng t(\x00e1)m"                        )
+  , ( "September", "th(\x00e1)ng ch(\x00ed)n"                       )
+  , ( "October"  , "th(\x00e1)ng m(\x01b0)(\x1edd)i"                )
+  , ( "November" , "th(\x00e1)ng m(\x01b0)(\x1edd)i m(\x1ed9)t"     )
+  , ( "December" , "th(\x00e1)ng m(\x01b0)(\x1edd)i hai"            )
   ]
 
 ruleMonths :: [Rule]
