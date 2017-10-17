@@ -27,6 +27,7 @@ import Duckling.Testing.Asserts
 import Duckling.Testing.Types hiding (examples)
 import Duckling.Time.Corpus
 import Duckling.Time.EN.Corpus
+
 import Duckling.TimeGrain.Types (Grain(..))
 
 tests :: TestTree
@@ -50,10 +51,7 @@ exactSecondTests = testCase "Exact Second Tests" $
       , examples (datetime (2016, 12, 6, 13, 31, 42) Second)
                  [ "in ten minutes"
                  ]
-      , examples (datetimeInterval ((2016, 12, 6, 13, 21, 42), (2016, 12, 12, 0, 0, 0)) Second)
-                 [ "by next week"
-                 , "by Monday"
-                 ]
+     
       ]
 
 valuesTest :: TestTree

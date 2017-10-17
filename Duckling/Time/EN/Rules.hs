@@ -93,6 +93,8 @@ ruleAbsorbInMonth = Rule
       _ -> Nothing
   }
 
+
+
 ruleAbsorbCommaTOD :: Rule
 ruleAbsorbCommaTOD = Rule
   { name = "absorption of , after named day"
@@ -108,6 +110,8 @@ ruleAbsorbCommaTOD = Rule
 instants :: [(Text, String, TG.Grain, Int)]
 instants =
   [ ("right now", "((just|right)\\s*)now|immediately", TG.Second, 0)
+  , ("currently", "currently", TG.Second, 0)
+  , ("current time", "current time", TG.Second, 0)
   , ("today", "todays?|(at this time)", TG.Day, 0)
   , ("tomorrow", "(tmrw?|tomm?or?rows?)", TG.Day, 1)
   , ("yesterday", "yesterdays?", TG.Day, - 1)
@@ -301,7 +305,7 @@ ruleTheNthTimeAfterTime = Rule
 ruleYear :: Rule
 ruleYear = Rule
   { name = "year"
-  , pattern = [Predicate $ isIntegerBetween 1000 2100]
+  , pattern = [Predicate $ isIntegerBetween 1980 2050]
   , prod = \tokens -> case tokens of
       (token:_) -> do
         n <- getIntValue token
@@ -1126,7 +1130,7 @@ ruleIntervalTODBetween = Rule
         Token Time <$> interval TTime.Closed td1 td2
       _ -> Nothing
   }
-
+{-|
 ruleIntervalBy :: Rule
 ruleIntervalBy = Rule
   { name = "by <time>"
@@ -1152,7 +1156,7 @@ ruleIntervalByTheEndOf = Rule
         Token Time <$> interval TTime.Closed (cycleNth TG.Second 0) td
       _ -> Nothing
   }
-
+-}
 ruleIntervalUntilTOD :: Rule
 ruleIntervalUntilTOD = Rule
   { name = "until <time-of-day>"
@@ -1638,6 +1642,149 @@ ruleTimezone = Rule
       _ -> Nothing
   }
 
+
+{-|
+in time range of 01 Jan2017 and Aug 01 2017         OK
+no later than Jan 01 2017                           OK
+no earlier than Jan 01 2017                         OK
+later than Jan 01 2017                              OK
+3 least>B-Order sold items from Jan 01 2017         OK
+3 least>B-Order sold items from Jan 01 2017 on
+3 least>B-Order sold items in future
+3 least>B-Order sold items  in following 3 months   OK
+3 least>B-Order sold items in the coming 3 months   OK
+3 least>B-Order sold items by the end of next month OK
+3 least>B-Order sold items by the end of last week
+3 least>B-Order sold items  by now
+3 least>B-Order sold items as early as Jan 01 2017   OK
+3 least>B-Order sold items as late as as Jan 01 2017 OK
+3 least>B-Order sold items as soon as Aug 01 2017    OK
+3 least>B-Order sold items current time              OK
+3 least>B-Order sold items currently                 OK
+-}
+--3 least>B-Order sold items  in following 3 months
+--3 least>B-Order sold items in the coming 3 months
+-- 1
+ruleCycleLastNextN2 :: Rule
+ruleCycleLastNextN2 = Rule
+  { name = "last|next|following|coming n <cycle> 2"
+  , pattern =
+    [ regex "((last|past)|(next|the coming|following))"
+    , Predicate $ isIntegerBetween 1 9999
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (Token RegexMatch (GroupMatch (match:_)):token:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        tt . cycleN True grain $ if match == "last" then - n else if match == "past" then - n else  n
+      _ -> Nothing
+  }
+
+--3 least>B-Order sold items current time
+--3 least>B-Order sold items currently
+-- 2
+
+
+-- in time range of 01 Jan2017 and Aug 01 2017
+-- 3
+
+ruleIntervalRangeOf :: Rule
+ruleIntervalRangeOf = Rule
+  { name = "in time range of <time> and <time>"
+  , pattern =
+    [ regex "in time range of"
+    , dimension Time
+    , regex "and"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token Time td1:_:Token Time td2:_) ->
+        Token Time <$> interval TTime.Closed td1 td2
+      _ -> Nothing
+  }
+
+--3 least>B-Order sold items as early as Jan 01 2017
+--3 least>B-Order sold items as late as as Jan 01 2017
+--3 least>B-Order sold items as soon as Aug 01 2017
+-- 4
+ruleAbsorbOnTime2 :: Rule
+ruleAbsorbOnTime2 = Rule
+  { name = "equal <date>"
+  , pattern =
+    [ regex "as (early|late|soon) as"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (_:token:_) -> Just token
+      _ -> Nothing
+  }
+
+-- 5
+ruleIntervalUntilTOD2 :: Rule
+ruleIntervalUntilTOD2 = Rule
+  { name = "until <time-of-day>"
+  , pattern =
+    [ regex "(anytime |sometimes? )?(before|(un)?til(l)?|through|up to|no later than|by)"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token Time td:_) -> tt $ withDirection TTime.Before td
+      _ -> Nothing
+  }
+
+-- 6 
+ruleIntervalAfterTOD2 :: Rule
+ruleIntervalAfterTOD2 = Rule
+  { name = "after <time-of-day>"
+  , pattern =
+    [ regex "(anytime |sometimes? )?(after|from|later than|no earlier than)"
+    , dimension Time
+
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token Time td:_) -> tt $ withDirection TTime.After td
+      _ -> Nothing
+  }
+
+ruleInFuture :: Rule
+ruleInFuture = Rule
+  { name = "in future"
+  , pattern =
+    [ regex "(in )(the )?(future)"
+    ]
+--  , prod = \tokens -> case tokens of
+--      (_:Token Time td:_) -> tt $ withDirection TTime.After now
+--      _ -> Nothing
+  ,prod = \_ -> tt $ withDirection TTime.After now
+  }
+
+--predNth (- 1) False td
+ruleByTheEndOf :: Rule
+ruleByTheEndOf = Rule
+  { name = "by the end of"
+  , pattern =
+    [ regex "by the end of"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token Time td:_) -> tt $ withDirection TTime.Before $ cycleNthAfter True aa 1 td where aa = timeGrain td
+      _ -> Nothing
+  }
+  {-|
+  prod = \tokens -> case tokens of
+      (Token RegexMatch (GroupMatch (match:_)):Token TimeGrain grain:_) ->
+        case Text.toLower match of
+          "this"          -> tt $ cycleNth grain 0
+          "coming"        -> tt $ cycleNth grain 0
+          "current"       -> tt $ cycleNth grain 0
+          "last"          -> tt . cycleNth grain $ - 1
+          "past"          -> tt . cycleNth grain $ - 1
+          "previous"      -> tt . cycleNth grain $ - 1
+          "next"          -> tt $ cycleNth grain 1
+          "the following" -> tt $ cycleNth grain 1
+          _ -> Nothing
+      _ -> Nothing
+-}
 rules :: [Rule]
 rules =
   [ ruleIntersect
@@ -1716,8 +1863,8 @@ rules =
   , ruleIntervalTODFrom
   , ruleIntervalTODAMPM
   , ruleIntervalTODBetween
-  , ruleIntervalBy
-  , ruleIntervalByTheEndOf
+  --, ruleIntervalBy
+  --, ruleIntervalByTheEndOf
   , ruleIntervalUntilTOD
   , ruleIntervalAfterTOD
   , ruleIntervalSinceTOD
@@ -1745,6 +1892,16 @@ rules =
   , rulePartOfMonth
   , ruleNow
   , ruleBlackFriday
+
+  ,ruleCycleLastNextN2
+ 
+  ,ruleIntervalRangeOf
+  ,ruleAbsorbOnTime2
+  ,ruleIntervalAfterTOD2
+
+  ,ruleIntervalUntilTOD2
+  ,ruleInFuture
+  ,ruleByTheEndOf
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek

@@ -95,6 +95,7 @@ parseHandler tzs = do
         parsedResult = parse (Text.decodeUtf8 tx) context dims
 
       writeLBS $ encode parsedResult
+      
   where
     defaultLang = EN
     defaultTimeZone = "America/Los_Angeles"

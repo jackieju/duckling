@@ -40,6 +40,7 @@ import Duckling.Types.Document (Document)
 import qualified Duckling.Types.Stash as Stash
 import Duckling.Types.Stash (Stash)
 
+import Debug.Trace 
 -- -----------------------------------------------------------------
 -- Engine
 
@@ -139,7 +140,7 @@ type Match = (Rule, Int, [Node])
 -- | Recursively augments `matches`.
 -- Discards partial matches stuck by a regex.
 matchAll :: Document -> Stash -> [Match] -> Duckling [Match]
-matchAll sentence stash matches = concatMapM mkNextMatches matches
+matchAll sentence stash matches =  concatMapM mkNextMatches matches
   where
     mkNextMatches :: Match -> Duckling [Match]
     mkNextMatches match@(Rule {pattern = []}, _, _) = return [ match ]
@@ -154,7 +155,7 @@ matchAll sentence stash matches = concatMapM mkNextMatches matches
 matchFirst :: Document -> Stash -> Match -> Duckling [Match]
 matchFirst _ _ (Rule {pattern = []}, _, _) = return []
 matchFirst sentence stash (rule@(Rule {pattern = p:ps}), position, route) =
-  map (mkMatch route newRule) <$> lookupItem sentence p stash position
+ map (mkMatch route newRule) <$> lookupItem sentence p stash position
   where
   newRule = rule { pattern = ps }
 
@@ -172,7 +173,7 @@ mkMatch :: [Node] -> Rule -> Node -> Match
 mkMatch route newRule (node@Node {nodeRange = Range _ pos'}) =
   newRoute `seq` (newRule, pos', newRoute)
   where newRoute = node:route
-
+ 
 -- | Finds new matches resulting from newly added tokens.
 -- Produces new tokens from full matches.
 parseString1
@@ -181,6 +182,7 @@ parseString1
 parseString1 rules sentence stash new matches = do
   -- Recursively match patterns.
   -- Find which `matches` can advance because of `new`.
+
   newPartial <- concatMapM (matchFirst sentence new) matches
 
   -- Find new matches resulting from newly added tokens (`new`)
@@ -209,6 +211,7 @@ parseString rules sentence = do
   (new, partialMatches) <-
     -- One the first pass we try all the rules
     parseString1 rules sentence Stash.empty Stash.empty []
+  
   if Stash.null new
     then return Stash.empty
     else

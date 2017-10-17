@@ -762,6 +762,7 @@ allExamples = concat
   , examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 2, 26, 0, 0, 0)) Second)
              [ "Within 2 weeks"
              ]
+{-|
   , examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 2, 12, 14, 0, 0)) Second)
              [ "by 2:00pm"
              ]
@@ -774,6 +775,7 @@ allExamples = concat
   , examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 4, 1, 0, 0, 0)) Second)
              [ "by the end of next month"
              ]
+-}
   , examples (datetime (2013, 2, 12, 13, 0, 0) Minute)
              [ "4pm CET"
              ]
@@ -918,5 +920,64 @@ allExamples = concat
   , examples (datetimeInterval ((2013, 8, 19, 0, 0, 0), (2013, 8, 22, 0, 0, 0)) Day)
              [ "19th To 21st aug"
              ]
+  
+
+
+  , examples (datetimeInterval ((2013, 2, 18, 0, 0, 0), (2013, 3, 11, 0, 0, 0)) Week)
+             [ 
+               "following 3 weeks"
+             , "the coming 3 weeks"
+             , "the coming three weeks"
+             ]
+  ,examples (datetime (2013, 2, 12, 4, 30, 0) Second)
+             [ "currently"
+             , "current time"
+             ]
+  ,examples (datetimeInterval ((2017, 1, 1, 0, 0, 0), (2017, 8, 2, 0, 0, 0)) Day)
+             [ 
+             "in time range of 01 Jan 2017 and Aug 01 2017"
+             ]
+  ,examples (datetimeOpenInterval Before (2013, 4, 1, 0, 0, 0) Month)
+             [ "by the end of next month"
+             ]
+  ,examples (datetime (2017, 1, 1, 0, 0, 0) Day)
+             [ "as early as Jan 01 2017"
+             , "as late as Jan 01 2017"
+             , "as soon as Jan 01 2017"
+             ]
+  , examples (datetimeOpenInterval After (2017, 1, 1, 0, 0, 0) Day)
+             [ "no earlier than Jan 01 2017"
+             , "later than Jan 01 2017"
+             , "from Jan 01 2017"
+           
+             ]
+  , examples (datetimeOpenInterval Before (2017, 1, 1, 0, 0, 0) Day)
+             [ "no later than Jan 01 2017"
+             ]
+  , examples (datetimeOpenInterval Before (2013, 2, 12, 4, 30, 0) Second)
+             [ "by now"
+             ]
+ 
+  , examples (datetimeOpenInterval Before (2013, 2, 11, 0, 0, 0) Week)
+             [ "by the end of last week"
+             ]
+  ,examples (datetimeOpenInterval After (2013, 2, 12, 4, 30, 0) Second)
+             [ "in future"
+             , "in the future"
+            
+             ]
+{-|
+   ,examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 4, 1, 0, 0, 0)) Second)
+             [ "by the end of next month"
+             ]
+    ,examples (datetimeOpenInterval Before (2013, 2, 12, 14, 0, 0) Second)
+             [ "by now"
+            
+             ]
+  ,examples (datetimeOpenInterval After (2013, 2, 12, 14, 0, 0) Second)
+             [ "in the future"
+            
+             ]
+  -}
 
   ]
