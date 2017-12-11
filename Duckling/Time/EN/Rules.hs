@@ -1770,21 +1770,120 @@ ruleByTheEndOf = Rule
       (_:Token Time td:_) -> tt $ withDirection TTime.Before $ cycleNthAfter True aa 1 td where aa = timeGrain td
       _ -> Nothing
   }
-  {-|
-  prod = \tokens -> case tokens of
-      (Token RegexMatch (GroupMatch (match:_)):Token TimeGrain grain:_) ->
-        case Text.toLower match of
-          "this"          -> tt $ cycleNth grain 0
-          "coming"        -> tt $ cycleNth grain 0
-          "current"       -> tt $ cycleNth grain 0
-          "last"          -> tt . cycleNth grain $ - 1
-          "past"          -> tt . cycleNth grain $ - 1
-          "previous"      -> tt . cycleNth grain $ - 1
-          "next"          -> tt $ cycleNth grain 1
-          "the following" -> tt $ cycleNth grain 1
-          _ -> Nothing
+--add the following 7 rules on 12/11/2017
+  -- same week/month/quarter of last year
+ruleSameGrainOfLastYear :: Rule
+ruleSameGrainOfLastYear = Rule
+  { name = "the <cycle> of <time>"
+  , pattern =
+    [ regex "same"
+    , dimension TimeGrain
+    , regex "of last year"
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        tt $ cycleNthAfter False grain 0 $ durationAgo (duration TG.Day 365)
       _ -> Nothing
--}
+  }
+ruleSameGrainOfNextYear :: Rule
+ruleSameGrainOfNextYear = Rule
+  { name = "the <cycle> of <time>"
+  , pattern =
+    [ regex "same"
+    , dimension TimeGrain
+    , regex "of next year"
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        tt $ cycleNthAfter False grain 0 $ inDuration (duration TG.Day 365)
+      _ -> Nothing
+  }
+
+ruleQ1234 :: Rule
+ruleQ1234 = Rule
+  { name = "Q1234"
+  , pattern =
+    [ 
+    regex "(Q1|Q2|Q3|Q4)"
+    ]
+  , prod = \tokens -> case tokens of
+      (Token RegexMatch (GroupMatch (match:_)):_) -> 
+          case Text.toLower match of
+         "q1" -> tt . cycleNthAfter True TG.Quarter 0 $ cycleNth TG.Year 0
+         "q2" -> tt . cycleNthAfter True TG.Quarter 1 $ cycleNth TG.Year 0
+         "q3" -> tt . cycleNthAfter True TG.Quarter 2 $ cycleNth TG.Year 0
+         "q4" -> tt . cycleNthAfter True TG.Quarter 3 $ cycleNth TG.Year 0
+         _        -> Nothing
+      _ -> Nothing     
+      
+  }
+
+ruleQ1InYear :: Rule
+ruleQ1InYear = Rule
+  { name = " Q1/2/3/4 in year"
+  , pattern =
+    [ regex "(Q1|Q2|Q3|Q4)"
+    , regex "of|in|from"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (Token RegexMatch (GroupMatch (match:_)):_:Token Time td:_) -> 
+         tt $ cycleNthAfter True TG.Quarter (case Text.toLower match of
+          "q1" -> 0 
+          "q2" -> 1 
+          "q3" -> 2 
+          _ ->  3) td
+      _ -> Nothing
+  }
+ruleQ1InYear2 :: Rule
+ruleQ1InYear2 = Rule
+  { name = " Q1/2/3/4 in year"
+  , pattern =
+    [ regex "(Q1|Q2|Q3|Q4)"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (Token RegexMatch (GroupMatch (match:_)):Token Time td:_) -> 
+         tt $ cycleNthAfter True TG.Quarter (case Text.toLower match of
+          "q1" -> 0 
+          "q2" -> 1 
+          "q3" -> 2 
+          _ ->  3) td
+      _ -> Nothing
+  }
+ruleOrdinalCycleOfTime :: Rule
+ruleOrdinalCycleOfTime = Rule
+  { name = " <cycle> <ordinal> in <time>"
+  , pattern =
+    [ dimension TimeGrain
+    , Predicate $ isIntegerBetween 1 365
+    , regex "of|in|from"
+    , dimension Time
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:token:_:Token Time td:_) -> do
+        n <- getIntValue token
+        tt $ cycleNthAfter True grain (n - 1) td
+      _ -> Nothing
+  }
+
+-- week 11 (in) 2015
+ruleCycleNumYear :: Rule
+ruleCycleNumYear = Rule
+  { name = "<cycle> <num> <yearNum>"
+  , pattern =
+    [ dimension TimeGrain
+    , Predicate $ isIntegerBetween 1 365
+    , Predicate $ isIntegerBetween 1980 2050
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:token:token2:_) -> do
+        n <- getIntValue token
+        n2 <- getIntValue token2
+        tt $ cycleNthAfter True grain (n - 1) $ year n2
+      _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleIntersect
@@ -1902,6 +2001,14 @@ rules =
   ,ruleIntervalUntilTOD2
   ,ruleInFuture
   ,ruleByTheEndOf
+
+  ,ruleSameGrainOfLastYear
+  ,ruleSameGrainOfNextYear
+  ,ruleQ1234
+  ,ruleOrdinalCycleOfTime
+  ,ruleCycleNumYear
+  ,ruleQ1InYear
+  ,ruleQ1InYear2
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek
