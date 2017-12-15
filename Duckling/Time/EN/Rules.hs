@@ -1883,6 +1883,15 @@ ruleCycleNumYear = Rule
         tt $ cycleNthAfter True grain (n - 1) $ year n2
       _ -> Nothing
   }
+-- year to date
+ruleYearToDate :: Rule
+ruleYearToDate = Rule
+  { name = "year to date"
+  , pattern =
+    [ regex "year to date"
+    ]
+  , prod = \_ -> Token Time <$> interval TTime.Closed (cycleNth TG.Year 0) (cycleNth TG.Day $ - 1)
+  }
 
 rules :: [Rule]
 rules =
@@ -2009,6 +2018,7 @@ rules =
   ,ruleCycleNumYear
   ,ruleQ1InYear
   ,ruleQ1InYear2
+  ,ruleYearToDate
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek
