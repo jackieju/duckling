@@ -21,6 +21,7 @@ import GHC.Generics
 import TextShow (TextShow)
 import qualified TextShow as TS
 
+
 data Lang
   = AR
   | BG

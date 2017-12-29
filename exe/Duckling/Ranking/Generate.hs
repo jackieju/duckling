@@ -10,7 +10,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Duckling.Ranking.Generate
-  ( regenAllClassifiers
+  ( 
+   regenAllClassifiers
+   
   , regenClassifiers
   ) where
 
@@ -26,9 +28,11 @@ import Duckling.Ranking.Train
 import Duckling.Ranking.Types
 import Duckling.Rules
 import Duckling.Testing.Types
+
+import qualified Duckling.Time.EN.Corpus as ENTime
+ 
 import qualified Duckling.Time.DA.Corpus as DATime
 import qualified Duckling.Time.DE.Corpus as DETime
-import qualified Duckling.Time.EN.Corpus as ENTime
 import qualified Duckling.Time.ES.Corpus as ESTime
 import qualified Duckling.Time.FR.Corpus as FRTime
 import qualified Duckling.Time.GA.Corpus as GATime
@@ -45,11 +49,14 @@ import qualified Duckling.Time.SV.Corpus as SVTime
 import qualified Duckling.Time.VI.Corpus as VITime
 import qualified Duckling.Time.ZH.Corpus as ZHTime
 
+
+
 -- -----------------------------------------------------------------
 -- Main
 
 regenAllClassifiers :: IO ()
-regenAllClassifiers = mapM_ regenClassifiers [minBound .. maxBound]
+regenAllClassifiers = mapM_ regenClassifiers [EN]
+-- regenAllClassifiers = mapM_ regenClassifiers [minBound .. maxBound] 
 
 -- | Run this function to overwrite the file with Classifiers data
 regenClassifiers :: Lang -> IO ()
@@ -75,6 +82,7 @@ regenClassifiers lang = do
       DA -> DATime.corpus
       DE -> DETime.corpus
       EN -> ENTime.corpus
+      {-|
       ES -> ESTime.corpus
       ET -> (testContext, [])
       FR -> FRTime.corpus
@@ -99,6 +107,7 @@ regenClassifiers lang = do
       UK -> (testContext, [])
       VI -> VITime.corpus
       ZH -> ZHTime.corpus
+      -}
 
     -- Data structure for the module
     m = Module () (Just header) pragmas imports decls

@@ -111,7 +111,7 @@ instants :: [(Text, String, TG.Grain, Int)]
 instants =
   [ ("right now", "((just|right)\\s*)now|immediately", TG.Second, 0)
   , ("currently", "currently", TG.Second, 0)
-  , ("current time", "current time", TG.Second, 0)
+  , ("current time", "(the )?current time", TG.Second, 0)
   , ("today", "todays?|(at this time)", TG.Day, 0)
   , ("tomorrow", "(tmrw?|tomm?or?rows?)", TG.Day, 1)
   , ("yesterday", "yesterdays?", TG.Day, - 1)
@@ -141,7 +141,7 @@ ruleNextDOW :: Rule
 ruleNextDOW = Rule
   { name = "this|next <day-of-week>"
   , pattern =
-    [ regex "this|next"
+    [ regex "this|(the )?next"
     , Predicate isADayOfWeek
     ]
   , prod = \tokens -> case tokens of
@@ -153,7 +153,7 @@ ruleThisTime :: Rule
 ruleThisTime = Rule
   { name = "this <time>"
   , pattern =
-    [ regex "this|current|coming"
+    [ regex "this|(the )?current|(the )?coming"
     , Predicate isNotLatent
     ]
   , prod = \tokens -> case tokens of
@@ -165,7 +165,7 @@ ruleNextTime :: Rule
 ruleNextTime = Rule
   { name = "next <time>"
   , pattern =
-    [ regex "next"
+    [ regex "(the )?next"
     , Predicate isNotLatent
     ]
   , prod = \tokens -> case tokens of
@@ -177,7 +177,7 @@ ruleLastTime :: Rule
 ruleLastTime = Rule
   { name = "last <time>"
   , pattern =
-    [ regex "(this past|last|previous)"
+    [ regex "(this past|(the )?last|(the )?previous|(the )?past)"
     , Predicate isNotLatent
     ]
   , prod = \tokens -> case tokens of
@@ -189,7 +189,7 @@ ruleLastWeekendOfMonth :: Rule
 ruleLastWeekendOfMonth = Rule
   { name = "last weekend of <named-month>"
   , pattern =
-    [ regex "last\\s(week(\\s|-)?end|wkend)\\s(of|in)"
+    [ regex "(the )?last\\s(week(\\s|-)?end|wkend)\\s(of|in)"
     , Predicate isAMonth
     ]
   , prod = \tokens -> case tokens of
@@ -202,7 +202,7 @@ ruleTimeBeforeLastAfterNext = Rule
   { name = "<time> before last|after next"
   , pattern =
     [ dimension Time
-    , regex "(before last|after next)"
+    , regex "(before (the )?last|after (the )?next)"
     ]
   , prod = \tokens -> case tokens of
       (Token Time td:Token RegexMatch (GroupMatch (match:_)):_) ->
@@ -214,7 +214,7 @@ ruleLastDOWOfTime :: Rule
 ruleLastDOWOfTime = Rule
   { name = "last <day-of-week> of <time>"
   , pattern =
-    [ regex "last"
+    [ regex "(the )?last"
     , Predicate isADayOfWeek
     , regex "of"
     , dimension Time
@@ -229,7 +229,7 @@ ruleLastCycleOfTime :: Rule
 ruleLastCycleOfTime = Rule
   { name = "last <cycle> of <time>"
   , pattern =
-    [ regex "last"
+    [ regex "(the )?last"
     , dimension TimeGrain
     , regex "of|in"
     , dimension Time
@@ -1352,7 +1352,7 @@ ruleCycleThisLastNext :: Rule
 ruleCycleThisLastNext = Rule
   { name = "this|last|next <cycle>"
   , pattern =
-    [ regex "(this|current|coming|next|the following|last|past|previous)"
+    [ regex "(this|(the )?current|(the )?coming|(the )?next|(the )?following|(the )?last|(the )?past|(the )?previous)"
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of
@@ -1365,6 +1365,14 @@ ruleCycleThisLastNext = Rule
           "past"          -> tt . cycleNth grain $ - 1
           "previous"      -> tt . cycleNth grain $ - 1
           "next"          -> tt $ cycleNth grain 1
+          "following"     -> tt $ cycleNth grain 1
+
+          "the coming"        -> tt $ cycleNth grain 0
+          "the current"       -> tt $ cycleNth grain 0
+          "the last"          -> tt . cycleNth grain $ - 1
+          "the past"          -> tt . cycleNth grain $ - 1
+          "the previous"      -> tt . cycleNth grain $ - 1
+          "the next"          -> tt $ cycleNth grain 1
           "the following" -> tt $ cycleNth grain 1
           _ -> Nothing
       _ -> Nothing
@@ -1409,14 +1417,14 @@ ruleCycleLastNextN :: Rule
 ruleCycleLastNextN = Rule
   { name = "last|next n <cycle>"
   , pattern =
-    [ regex "((last|past)|(next))"
+    [ regex "((the )?(last|past)|(the )?(next))"
     , Predicate $ isIntegerBetween 1 9999
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of
       (Token RegexMatch (GroupMatch (match:_)):token:Token TimeGrain grain:_) -> do
         n <- getIntValue token
-        tt . cycleN True grain $ if match == "next" then n else - n
+        tt . cycleN True grain $ if match == "next" then n else if match == "the next" then n else - n
       _ -> Nothing
   }
 
@@ -1669,7 +1677,7 @@ ruleCycleLastNextN2 :: Rule
 ruleCycleLastNextN2 = Rule
   { name = "last|next|following|coming n <cycle> 2"
   , pattern =
-    [ regex "((last|past)|(next|the coming|following))"
+    [ regex "((the )?(last|past)|((the )?next|(the )?coming|(the )?following))"
     , Predicate $ isIntegerBetween 1 9999
     , dimension TimeGrain
     ]
@@ -1776,9 +1784,9 @@ ruleSameGrainOfLastYear :: Rule
 ruleSameGrainOfLastYear = Rule
   { name = "the <cycle> of <time>"
   , pattern =
-    [ regex "same"
+    [ regex "(the )?same"
     , dimension TimeGrain
-    , regex "of last year"
+    , regex "of (the )?last year"
     ]
   , prod = \tokens -> case tokens of
       (_:Token TimeGrain grain:_) ->
@@ -1789,9 +1797,9 @@ ruleSameGrainOfNextYear :: Rule
 ruleSameGrainOfNextYear = Rule
   { name = "the <cycle> of <time>"
   , pattern =
-    [ regex "same"
+    [ regex "(the )?same"
     , dimension TimeGrain
-    , regex "of next year"
+    , regex "of (the )?next year"
     ]
   , prod = \tokens -> case tokens of
       (_:Token TimeGrain grain:_) ->
