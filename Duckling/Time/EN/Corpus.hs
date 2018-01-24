@@ -712,6 +712,7 @@ allExamples = concat
              , "last two days"
              , "the past 2 days"--ADDED by Junying on 29/12/2017 
              , "past 2 days"
+             , "the previous 2 days"
              ]
   , examples (datetimeInterval ((2013, 2, 13, 0, 0, 0), (2013, 2, 16, 0, 0, 0)) Day)
              [ "next 3 days"

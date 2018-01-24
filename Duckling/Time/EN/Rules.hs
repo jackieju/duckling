@@ -1417,7 +1417,7 @@ ruleCycleLastNextN :: Rule
 ruleCycleLastNextN = Rule
   { name = "last|next n <cycle>"
   , pattern =
-    [ regex "((the )?(last|past)|(the )?(next))"
+    [ regex "((the )?(last|past|previous)|(the )?(next))"
     , Predicate $ isIntegerBetween 1 9999
     , dimension TimeGrain
     ]
@@ -1677,14 +1677,14 @@ ruleCycleLastNextN2 :: Rule
 ruleCycleLastNextN2 = Rule
   { name = "last|next|following|coming n <cycle> 2"
   , pattern =
-    [ regex "((the )?(last|past)|((the )?next|(the )?coming|(the )?following))"
+    [ regex "((the )?(last|past|previous)|((the )?next|(the )?coming|(the )?following))"
     , Predicate $ isIntegerBetween 1 9999
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of
       (Token RegexMatch (GroupMatch (match:_)):token:Token TimeGrain grain:_) -> do
         n <- getIntValue token
-        tt . cycleN True grain $ if match == "last" then - n else if match == "past" then - n else  n
+        tt . cycleN True grain $ if match == "last" then - n else if match == "past" then - n else if match == "previous" then - n else  n
       _ -> Nothing
   }
 
