@@ -13,6 +13,7 @@ module Duckling.Duration.Helpers
   ( duration
   , isGrain
   , isNatural
+  , isNaturalLessThan1900
   , isNumeralWith
   , minutesFromHourMixedFraction
   ) where
@@ -36,8 +37,13 @@ isGrain _ _ = False
 
 isNatural :: Predicate
 isNatural (Token Numeral NumeralData {TNumeral.value = x}) =
-  TNumeral.isNatural x
+  TNumeral.isNatural x 
 isNatural _ = False
+
+isNaturalLessThan1900 :: Predicate
+isNaturalLessThan1900 (Token Numeral NumeralData {TNumeral.value = x}) =
+  TNumeral.isNatural x && x < 1900
+isNaturalLessThan1900 _ = False
 
 isNumeralWith :: (NumeralData -> t) -> (t -> Bool) -> PatternItem
 isNumeralWith f pred = Predicate $ \x -> case x of

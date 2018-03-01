@@ -1022,6 +1022,7 @@ allExamples = concat
              [ "Q1"
              , "Q1 in 2013" 
              , "Q1 2013"
+             , "2013 Q1"
              ]
   ,examples (datetime (2013, 4, 1, 0, 0, 0) Quarter)
              [ "Q2"
@@ -1035,6 +1036,7 @@ allExamples = concat
   ,examples (datetime (2017, 10, 1, 0, 0, 0) Quarter)
              [ "Q4 in 2017"
              , "Q4 2017"
+             , "2017 Q4"
              , "Quarter 4 in 2017"
              , "Qtr 4 2017"
              ]

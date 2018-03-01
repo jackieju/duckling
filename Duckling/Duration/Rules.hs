@@ -26,7 +26,7 @@ ruleIntegerUnitofduration :: Rule
 ruleIntegerUnitofduration = Rule
   { name = "<integer> <unit-of-duration>"
   , pattern =
-    [ Predicate isNatural
+    [ Predicate isNaturalLessThan1900  
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of

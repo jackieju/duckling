@@ -1569,7 +1569,7 @@ ruleDurationInWithinAfter = Rule
          "within" -> Token Time <$>
            interval TTime.Open (cycleNth TG.Second 0) (inDuration dd)
          "after" -> tt . withDirection TTime.After $ inDuration dd
-         "in" -> tt $ inDuration dd
+         "in" ->   tt $ inDuration dd 
          _ -> Nothing
       _ -> Nothing
   }
@@ -1859,6 +1859,25 @@ ruleQ1InYear2 = Rule
           _ ->  3) td
       _ -> Nothing
   }
+
+ruleQ1InYear3 :: Rule
+ruleQ1InYear3 = Rule
+  { name = " year Q1/2/3/4 "
+  , pattern =
+    [ 
+      dimension Time
+    , regex "(Q1|Q2|Q3|Q4)"
+    ]
+  , prod = \tokens -> case tokens of
+      (Token Time td:Token RegexMatch (GroupMatch (match:_)):_) -> 
+         tt $ cycleNthAfter True TG.Quarter (case Text.toLower match of
+          "q1" -> 0 
+          "q2" -> 1 
+          "q3" -> 2 
+          _ ->  3) td
+      _ -> Nothing
+  }
+
 ruleOrdinalCycleOfTime :: Rule
 ruleOrdinalCycleOfTime = Rule
   { name = " <cycle> <ordinal> in <time>"
@@ -2027,6 +2046,7 @@ rules =
   ,ruleQ1InYear
   ,ruleQ1InYear2
   ,ruleYearToDate
+  ,ruleQ1InYear3
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek
