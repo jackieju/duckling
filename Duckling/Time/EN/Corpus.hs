@@ -1011,6 +1011,7 @@ allExamples = concat
   ,examples (datetime (2012, 2, 13, 0, 0, 0) Week)
              [ "the same week of the last year"
              , "same week of last year"
+             , "same week last year"
              , "same week of the last year"
              ]
   ,examples (datetime (2014, 2, 1, 0, 0, 0) Month)
@@ -1043,6 +1044,56 @@ allExamples = concat
   ,examples (datetimeInterval ((2013, 1, 1, 0, 0, 0), (2013, 2, 12, 0, 0, 0)) Day)
              [ "year to date"
              ]
+  ,examples (datetimeOpenInterval Before (2013, 4, 1, 0, 0, 0) Month)
+             [ "ending with month 3"
+             ]
+  ,examples (datetimeOpenInterval Before (2013, 10, 1, 0, 0, 0) Quarter)
+             [ "ending with quarter 3"
+             ]
+  ,examples (datetimeOpenInterval Before (2013, 1, 21, 0, 0, 0) Week)
+             [ "ending with week 2"
+             ]
+  ,examples (datetimeOpenInterval Before (2013, 1, 14, 0, 0, 0) Week)
+             [ "before week 2"
+             , "before the week of 2"
+             , "before  week of 2"
+             , "before the week  2"
+             ]
+  ,examples (datetimeOpenInterval Before (2018, 1, 1, 0, 0, 0) Year)
+             [ "ending with year 2017"
+             ]
+  , examples (datetimeOpenInterval After (2013, 4, 1, 0, 0, 0) Quarter)
+             [ "starting from qtr 2"
+             , "after the qtr of 2"
+             , "after qtr of 2"
+             , "after qtr 2"
+             , "after the qtr 2"
+             ]
+  , examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 2, 22, 4, 0, 0)) Second)
+             [ "for 10 days"
+             ]
+  ,examples (datetime (2013, 4, 1, 0, 0, 0) Quarter)
+             [ "Q2"
+             , "the quarter of 2"
+             , "the quarter 2"
+             --, "quarter of 2"
+             , "quarter 2"
+             ]
+  ,examples (datetime (2018, 1, 1, 0, 0, 0) Year)
+             [ "year 2018"
+             , "the year of 2018"
+             , "year of 2018"
+             , "the year 2018"
+             , "2018"
+             ]
+  ,examples (datetime (2013, 7, 1, 0, 0, 0) Month)
+             [ "month 7"
+             , "the month of 7"
+             , "month of 7"
+             , "the month 7"
+             , "July"
+             ]
+
 {-|
    ,examples (datetimeInterval ((2013, 2, 12, 4, 30, 0), (2013, 4, 1, 0, 0, 0)) Second)
              [ "by the end of next month"

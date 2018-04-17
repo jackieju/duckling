@@ -1,0 +1,7 @@
+04/17/2018 extension:
+	1. add ruleCycleNumYear2 for 'year 2018; month 7; quarter 2; week 13, etc.'
+	2. modify ruleByTheEndOf & ruleIntervalAfterTOD2 for 'starting from and ending with'
+	3. modify ruleSameGrainOfLastYear for 'same month last year'
+	4. add ruleCycleNumYear3 for 'year of 2018; month of 7; quarter of 2; week of 13, etc.'
+	5. add ruleIntervalForDurationFrom2 for 'for 2 years'
+

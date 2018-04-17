@@ -1215,7 +1215,7 @@ ruleDaysOfWeek = zipWith go daysOfWeek [1..7]
 
 months :: [(Text, String)]
 months =
-  [ ( "January"  , "january|jan\\.?"     )
+  [ ( "January"  , "january|jan\\.?"  )
   , ( "February" , "february|feb\\.?"    )
   , ( "March"    , "march|mar\\.?"       )
   , ( "April"    , "april|apr\\.?"       )
@@ -1700,7 +1700,7 @@ ruleIntervalRangeOf :: Rule
 ruleIntervalRangeOf = Rule
   { name = "in time range of <time> and <time>"
   , pattern =
-    [ regex "in time range of"
+    [ regex "in (time|the) range of"
     , dimension Time
     , regex "and"
     , dimension Time
@@ -1745,7 +1745,7 @@ ruleIntervalAfterTOD2 :: Rule
 ruleIntervalAfterTOD2 = Rule
   { name = "after <time-of-day>"
   , pattern =
-    [ regex "(anytime |sometimes? )?(after|from|later than|no earlier than)"
+    [ regex "(anytime |sometimes? )?(starting from|after|from|later than|no earlier than)"
     , dimension Time
 
     ]
@@ -1771,7 +1771,7 @@ ruleByTheEndOf :: Rule
 ruleByTheEndOf = Rule
   { name = "by the end of"
   , pattern =
-    [ regex "by the end of"
+    [ regex "(ending with|by the end of)"
     , dimension Time
     ]
   , prod = \tokens -> case tokens of
@@ -1786,7 +1786,7 @@ ruleSameGrainOfLastYear = Rule
   , pattern =
     [ regex "(the )?same"
     , dimension TimeGrain
-    , regex "of (the )?last year"
+    , regex "(of)? (the )?last year"
     ]
   , prod = \tokens -> case tokens of
       (_:Token TimeGrain grain:_) ->
@@ -1825,6 +1825,7 @@ ruleQ1234 = Rule
       _ -> Nothing     
       
   }
+
 
 ruleQ1InYear :: Rule
 ruleQ1InYear = Rule
@@ -1910,6 +1911,70 @@ ruleCycleNumYear = Rule
         tt $ cycleNthAfter True grain (n - 1) $ year n2
       _ -> Nothing
   }
+
+-- year 2018; month 7; quarter 2; week 13, etc.
+ruleCycleNumYear2 :: Rule
+ruleCycleNumYear2 = Rule
+  { name = "<cycle> <num> <yearNum>"
+  , pattern =
+    [ dimension TimeGrain 
+    , Predicate $ isIntegerBetween 1 2050
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:token:_) -> do
+        n <- getIntValue token
+        --tt $  cycleNthAfter True grain ( if grain /= TG.Year then (n - 1) else 0) $ cycleNth TG.Year 0
+        tt $ if grain /= TG.Year then (cycleNthAfter True grain (n - 1) $ cycleNth TG.Year 0 ) else year n
+      _ -> Nothing
+  }
+
+ruleCycleNumYear3 :: Rule
+ruleCycleNumYear3 = Rule
+  { name = "<cycle> <num> <yearNum>"
+  , pattern =
+    [ dimension TimeGrain 
+    , regex "of"
+    , Predicate $ isIntegerBetween 1 2050
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:_:token:_) -> do
+        n <- getIntValue token
+        --tt $  cycleNthAfter True grain ( if grain /= TG.Year then (n - 1) else 0) $ cycleNth TG.Year 0
+        tt $ if grain /= TG.Year then (cycleNthAfter True grain (n - 1) $ cycleNth TG.Year 0 ) else year n
+      _ -> Nothing
+  }
+ruleCycleNumYear4 :: Rule
+ruleCycleNumYear4 = Rule
+  { name = "<cycle> <num> <yearNum>"
+  , pattern =
+    [ regex "the"
+    , dimension TimeGrain 
+    , regex "of"
+    , Predicate $ isIntegerBetween 1 2050
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_:token:_) -> do
+        n <- getIntValue token
+        --tt $  cycleNthAfter True grain ( if grain /= TG.Year then (n - 1) else 0) $ cycleNth TG.Year 0
+        tt $ if grain /= TG.Year then (cycleNthAfter True grain (n - 1) $ cycleNth TG.Year 0 ) else year n
+      _ -> Nothing
+  }
+ruleCycleNumYear5 :: Rule
+ruleCycleNumYear5 = Rule
+  { name = "<cycle> <num> <yearNum>"
+  , pattern =
+    [ regex "the"
+    , dimension TimeGrain 
+    , Predicate $ isIntegerBetween 1 2050
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:token:_) -> do
+        n <- getIntValue token
+        --tt $  cycleNthAfter True grain ( if grain /= TG.Year then (n - 1) else 0) $ cycleNth TG.Year 0
+        tt $ if grain /= TG.Year then (cycleNthAfter True grain (n - 1) $ cycleNth TG.Year 0 ) else year n
+      _ -> Nothing
+  }
+
 -- year to date
 ruleYearToDate :: Rule
 ruleYearToDate = Rule
@@ -1919,6 +1984,18 @@ ruleYearToDate = Rule
     ]
   , prod = \_ -> Token Time <$> interval TTime.Closed (cycleNth TG.Year 0) (cycleNth TG.Day $ - 1)
   }
+ruleIntervalForDurationFrom2 :: Rule
+ruleIntervalForDurationFrom2 = Rule
+  { name = "for <duration> from <time>"
+  , pattern =
+    [ regex "for"
+    , dimension Duration
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token Duration dd:_) ->
+        Token Time <$> interval TTime.Open now (durationAfter dd now)
+      _ -> Nothing
+}
 
 rules :: [Rule]
 rules =
@@ -2047,6 +2124,11 @@ rules =
   ,ruleQ1InYear2
   ,ruleYearToDate
   ,ruleQ1InYear3
+  ,ruleCycleNumYear2
+  ,ruleCycleNumYear3
+  ,ruleCycleNumYear4
+  ,ruleCycleNumYear5
+  ,ruleIntervalForDurationFrom2
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek
